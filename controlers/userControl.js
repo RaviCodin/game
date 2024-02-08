@@ -11,113 +11,58 @@ const cloudinery = require('cloudinary')
 //registation user
 exports.registationUser = catchAsyncError(async (req, resp, next) => {
 
-  const { name, email, password } = req.body;
   console.log('call....')
-  // console.log("0k ");
+  const { name, email, password } = req.body;
+  const otp = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+  let user = null
 
-  // const user = await User.create({
-  //   name,
-  //   email,
-  //   password,
-  // });
+  user = await User.findOne({email:email})
 
-  let user = {}
+  const html = `your otp is ${otp}`
+
+  if(!user){
+    user = await User.create({
+      name,
+      email,
+      password,
+      otp
+    });
+  
+  }else{
+    user.otp = otp;
+   await  user.save()
+  }
+
+  await sendEmail({ email, subject:"Play Bazaar email verification", html })
+
   // sendToken(user, 201, resp);
   resp.status(201).json({
     success: true,
-    user: { name: 'wow' },
+    user
   });
 });
 
-//create account by admin 
-exports.createAccountByAdmin = catchAsyncError(async (req, resp, next) => {
-  const { name, email, role, region } = req.body;
-  console.log('create user')
 
-  const user = await User.create({
-    name,
-    email,
-    role,
-    region
-  });
+exports.otpVerification = catchAsyncError(async (req, resp, next) => {
+  const { email, otp  } = req.body;
+  // console.log(req.body.password)
+  const user = await User.findOne({ email }).select("+otp")
 
   if (!user) {
-    return next(new ErrorHandler("User Not Found", 404));
+    return next(new ErrorHandler("Invalid email ", 401));
   }
-  // get ResetPassword Token
-  const resetToken = user.getResentPasswordToken();
-
-  await user.save({ validateBeforeSave: false });
-
-  const createUserUrl = `${req.protocol}://${req.get("host")}/email/invited-user/${resetToken}`;
-
-  const massage = `Create your account  Link  :- \n\n 
-  <a href="${createUserUrl}">LINK</a>
-
-  Note : Link Expire in 30 minutes.
-\n`;
-
-  try {
-    // console.log("okey1 ..")
-    await sendEmail({
-      email: user.email,
-      subject: `You have been invited to join Sanwariya Edu Consultant Portal`,
-      massage,
-    });
-    // console.log("okey2 ..")
-
-    resp.status(200).json({
-      sucess: true,
-      massage: `Email sent to ${user.email} successfully`,
-    });
-  } catch (error) {
-    console.log("error email ..")
-
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save({ validateBeforeSave: false });
-
-    next(new ErrorHandler(error.massage, 500));
+  if (user.otp !== Number(otp)) {
+    return next(new ErrorHandler("Invalid otp ", 401));
   }
+
+  user.otp = '';
+  user.emailVerification = true;
+
+  user.save()
+  sendToken(user, 200, resp);
 });
-//create account by user
-exports.accountCreateByUser = catchAsyncError(async (req, res, next) => {
 
-  const { name, password } = req.body
 
-  const resetAccountToken = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
-
-  const user = await User.findOne({
-    resetPasswordToken: resetAccountToken,
-    resetPasswordExpire: { $gt: Date.now() },
-  });
-
-  if (!user) {
-    return next(
-      new ErrorHandler("Account token is expire or invalid", 400)
-    );
-  }
-
-  // if (req.body.password !== req.body.confirmPassword) {
-  //   return next(
-  //     new ErrorHandler(" password and confirm password not machted", 400)
-  //   );
-  // }
-
-  user.name = name
-  user.password = req.body.password;
-  user.isActive = true;
-  user.verification = 'verified';
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpire = undefined;
-
-  await user.save();
-  console.log("okey....")
-  sendToken(user, 200, res);
-});
 
 // log-in User
 exports.loginUser = catchAsyncError(async (req, resp, next) => {
@@ -131,14 +76,16 @@ exports.loginUser = catchAsyncError(async (req, resp, next) => {
 
   const user = await User.findOne({ email }).select("+password");
 
-
-
   if (!user) {
     return next(new ErrorHandler("Invalid email and password", 401));
   }
 
   if (user.isActive === false) {
     return next(new ErrorHandler("You  are not verified or block by admin", 401));
+  }
+
+  if (user.emailVerification === false) {
+    return next(new ErrorHandler("Your Email are  not verified. Please Sign in", 401));
   }
 
   // const isPasswordmatch =  user.comparePasswordx(password);
@@ -166,58 +113,95 @@ exports.logout = catchAsyncError(async (req, resp, next) => {
 
 // Forget Password link genrating
 exports.forgetPassword = catchAsyncError(async (req, resp, next) => {
-  // console.log("okey pass")
-  const { email, password } = req.body
+  const { email } = req.body
+  const otp = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+
   const user = await User.findOne({ email });
 
-  // console.log("hii.."+user)
   if (!user) {
-    return next(new ErrorHandler("User Not Found", 404));
+    return next(new ErrorHandler("Invalid Email", 404));
   }
 
-  user.password = password;
-
+  user.otp = otp;
   await user.save();
 
-  sendToken(user, 200, res);
+  console.log(otp,user._id)
 
+  await sendEmail({ email, subject:"Play Bazaar email verification for password", html:`Your Otp is ${otp}` })
 
+  // sendToken(user, 201, resp);
+  resp.status(201).json({
+    success: true,
+    // user
+  });
+
+  // sendToken(user, 200, res);
+});
+
+exports.forgetPasswordGenrate = catchAsyncError(async (req, resp, next) => {
+  const { id,otp } = req.body
+  const password = Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000;
+
+  const user = await User.findById(id).select("+otp");
+
+  if (!user) {
+    return next(new ErrorHandler("Invalid Email", 404));
+  }
+
+  if(user.otp !== Number(otp)){
+    return next(new ErrorHandler("Invalid Otp", 404));
+  }
+  user.otp = '';
+  user.password = password;
+
+  await user.save()
+
+  console.log(password)
+  const html = `Your New Password is ${password}`
+  await sendEmail({ email:user.email, subject:"Play Bazaar email verification for password", html })
+
+  // sendToken(user, 201, resp);
+  resp.status(201).json({
+    success: true,
+    user
+  });
+
+  // sendToken(user, 200, res);
 });
 
 // reset password
-exports.resetPassword = catchAsyncError(async (req, res, next) => {
-  const resetPasswordToken = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
+// exports.resetPassword = catchAsyncError(async (req, res, next) => {
+//   const resetPasswordToken = crypto
+//     .createHash("sha256")
+//     .update(req.params.token)
+//     .digest("hex");
 
-  const user = await User.findOne({
-    resetPasswordToken,
-    resetPasswordExpire: { $gt: Date.now() },
-  });
-  if (!user) {
-    return next(
-      new ErrorHandler("Reset password token is expire or invalid", 400)
-    );
-  }
+//   const user = await User.findOne({
+//     resetPasswordToken,
+//     resetPasswordExpire: { $gt: Date.now() },
+//   });
+//   if (!user) {
+//     return next(
+//       new ErrorHandler("Reset password token is expire or invalid", 400)
+//     );
+//   }
 
-  if (req.body.password !== req.body.confirmPassword) {
-    return next(
-      new ErrorHandler(" password and confirm password not machted", 400)
-    );
-  }
+//   if (req.body.password !== req.body.confirmPassword) {
+//     return next(
+//       new ErrorHandler(" password and confirm password not machted", 400)
+//     );
+//   }
 
-  user.password = req.body.password;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpire = undefined;
+//   user.password = req.body.password;
+//   user.resetPasswordToken = undefined;
+//   user.resetPasswordExpire = undefined;
 
-  await user.save();
+//   await user.save();
 
-  sendToken(user, 200, res);
-});
+//   sendToken(user, 200, res);
+// });
 
 // get User Details
-
 exports.getUserDetails = catchAsyncError(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
@@ -350,9 +334,8 @@ exports.updateUser = catchAsyncError(async (req, res, next) => {
 
   const newUserData = {
     isActive: req.body.isActive,
-    role: req.body.role
   }
-  console.log(newUserData)
+  // console.log(newUserData)
   // we will add cloudinery letter
 
   const user = await User.findByIdAndUpdate(req.params.id, newUserData, {

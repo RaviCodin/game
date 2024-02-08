@@ -2,7 +2,7 @@
 const nodeMailer = require('nodemailer');
 
 exports.sendEmail = async (options)=>{
-    console.log(options)
+    // console.log(options)
     // console.log(options,process.env.SMPT_HOST,process.env.SMPT_PORT,process.env.SMVT_SERVISE,process.env.SMVT_MAIL,process.env.SMVT_PASS)
 
     const transporter = nodeMailer.createTransport({
@@ -19,7 +19,7 @@ exports.sendEmail = async (options)=>{
         from: process.env.SMVT_MAIL,
         to: options.email ,
         subject: options.subject,
-        html: options.massage
+        html: options.html
     }
     
     await transporter.sendMail(mailOptions)

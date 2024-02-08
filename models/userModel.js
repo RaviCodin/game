@@ -36,7 +36,16 @@ const userSchema = new mongoose.Schema({
         }
     },
     
-    otp:Number,
+    otp:{
+        type:Number,
+        select:false
+        
+    },
+    isActive:{
+        type:Boolean,
+        default :true
+    },
+    
     emailVerification:{
         type:Boolean,
         default :false
@@ -44,6 +53,16 @@ const userSchema = new mongoose.Schema({
     role:{
         type:String,
         default:"user"
+    },
+
+    IFSCE:{
+        type:String,
+    },
+    accountNo:{
+        type:String,
+    },
+    accountHolderName:{
+        type:String,
     },
 
     createAt:{
