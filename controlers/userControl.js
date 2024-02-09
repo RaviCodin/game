@@ -7,39 +7,71 @@ const crypto = require("crypto");
 const cloudinery = require('cloudinary')
 //  npm i bcryptjs validator jsonwebtoken crypto  cloudinary
 
-
 //registation user
-exports.registationUser = catchAsyncError(async (req, resp, next) => {
-
+exports.emailReg = catchAsyncError(async (req, resp, next) => {
   console.log('call....')
-  const { name, email, password } = req.body;
+  const { email  } = req.body;
   const otp = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
   let user = null
 
   user = await User.findOne({email:email})
-
   const html = `your otp is ${otp}`
 
   if(!user){
     user = await User.create({
-      name,
       email,
-      password,
       otp
     });
   
   }else{
+    if (user.emailVerification === true) {
+      return next(new ErrorHandler("Email was already registered. ", 401));
+    }
     user.otp = otp;
    await  user.save()
   }
-
+console.log(otp)
   await sendEmail({ email, subject:"Play Bazaar email verification", html })
 
   // sendToken(user, 201, resp);
   resp.status(201).json({
     success: true,
-    user
+    user:{
+      email:user.email,
+      _id:user._id
+    }
   });
+});
+
+//registation user
+exports.registationUser = catchAsyncError(async (req, resp, next) => {
+
+  const { name,  password,email } = req.body;
+  let user = null
+
+  user = await User.findOne({email:email})
+
+
+  if(user){
+    user = await User.findByIdAndUpdate(req.params.id, {
+      name,
+      password,
+    });
+
+    await user.save()
+  
+  }else{
+    return next(new ErrorHandler("Invalid User ", 401));
+
+  }
+  console.log('call....', user)
+
+
+  sendToken(user, 201, resp);
+  // resp.status(201).json({
+  //   success: true,
+  //   user
+  // });
 });
 
 
@@ -49,7 +81,7 @@ exports.otpVerification = catchAsyncError(async (req, resp, next) => {
   const user = await User.findOne({ email }).select("+otp")
 
   if (!user) {
-    return next(new ErrorHandler("Invalid email ", 401));
+    return next(new ErrorHandler("Invalid User ", 401));
   }
   if (user.otp !== Number(otp)) {
     return next(new ErrorHandler("Invalid otp ", 401));
@@ -59,7 +91,14 @@ exports.otpVerification = catchAsyncError(async (req, resp, next) => {
   user.emailVerification = true;
 
   user.save()
-  sendToken(user, 200, resp);
+  // sendToken(user, 200, resp);
+  resp.status(201).json({
+    success: true,
+    user:{
+      email:user.email,
+      _id:user._id
+    }
+  });
 });
 
 

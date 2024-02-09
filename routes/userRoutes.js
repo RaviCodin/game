@@ -13,14 +13,17 @@ const {
   updateUser,
   otpVerification,
   forgetPasswordGenrate,
+  emailReg,
 } = require("../controlers/userControl");
 
 const { isAuthanticatedUser, authourizRoles } = require("../middleWare/auth");
 
 const router = express.Router();
  
-router.route("/register").post(registationUser);
+router.route("/email").post(emailReg);
 router.route("/otp").post(otpVerification);
+router.route("/register/:id").post(registationUser);
+
 router.route("/login").post(loginUser);
 
 router.route("/password/forget").post(forgetPassword);
