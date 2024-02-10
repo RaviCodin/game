@@ -9,11 +9,14 @@ exports.sendEmail = async (options)=>{
         host:process.env.SMPT_HOST,
         port: process.env.SMPT_PORT,
         service:process.env.SMVT_SERVISE,
+        // secure: true,
         auth:{
             user:process.env.SMVT_MAIL,
-            pass:process.env.SMVT_PASS
+            pass:process.env.SMVT_PASS 
+           
         }
     })
+    console.log(process.env.SMVT_PASS,process.env.SMVT_MAIL)
     
     const mailOptions = {
         from: process.env.SMVT_MAIL,

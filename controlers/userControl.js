@@ -171,7 +171,10 @@ exports.forgetPassword = catchAsyncError(async (req, resp, next) => {
   // sendToken(user, 201, resp);
   resp.status(201).json({
     success: true,
-    // user
+    user:{
+      _id:user._id,
+      email:user.email,
+    }
   });
 
   // sendToken(user, 200, res);
