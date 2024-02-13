@@ -18,7 +18,15 @@ const userSchema = new mongoose.Schema({
         minlength:[8,"Password Length Min 8 Character"],
         select:false
     },
+    isReference:{
+        type:Boolean,
+        default:true
+    },
     Reference:{
+        type:String,
+        default:null
+    },
+    myReference:{
         type:String,
         default:null
     },
@@ -42,7 +50,7 @@ const userSchema = new mongoose.Schema({
     },
     isActive:{
         type:Boolean,
-        default :true
+        default :false
     },
     
     emailVerification:{

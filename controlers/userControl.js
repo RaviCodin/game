@@ -1,3 +1,4 @@
+const referralCodes = require('referral-codes')
 const ErrorHandler = require("../utils/errorhandler");
 const catchAsyncError = require("../middleWare/catchAsyncError");
 const User = require("../models/userModel");
@@ -7,38 +8,41 @@ const crypto = require("crypto");
 const cloudinery = require('cloudinary')
 //  npm i bcryptjs validator jsonwebtoken crypto  cloudinary
 
-//registation user
+
+
+
+
 exports.emailReg = catchAsyncError(async (req, resp, next) => {
   console.log('call....')
-  const { email  } = req.body;
+  const { email } = req.body;
   const otp = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
   let user = null
 
-  user = await User.findOne({email:email})
+  user = await User.findOne({ email: email })
   const html = `your otp is ${otp}`
 
-  if(!user){
+  if (!user) {
     user = await User.create({
       email,
       otp
     });
-  
-  }else{
+
+  } else {
     if (user.emailVerification === true) {
       return next(new ErrorHandler("Email was already registered. ", 401));
     }
     user.otp = otp;
-   await  user.save()
+    await user.save()
   }
-console.log(otp)
-  await sendEmail({ email, subject:"Play Bazaar email verification", html })
+  console.log(otp)
+  await sendEmail({ email, subject: "Play Bazaar email verification", html })
 
   // sendToken(user, 201, resp);
   resp.status(201).json({
     success: true,
-    user:{
-      email:user.email,
-      _id:user._id
+    user: {
+      email: user.email,
+      _id: user._id
     }
   });
 });
@@ -46,22 +50,41 @@ console.log(otp)
 //registation user
 exports.registationUser = catchAsyncError(async (req, resp, next) => {
 
-  const { name,  password,email } = req.body;
+  const { name, password, email, reference } = req.body;
   let user = null
 
-  user = await User.findOne({email:email})
+  const refer = referralCodes.generate({
+    length: 7,
+    count: 1,
+    charset: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  });
 
+  user = await User.findById(req.params.id).select("+password")
+  if (user && user.isActive === false) {
+    if (reference && user.Reference === null) {
+      const referenceUser = await User.findOne({ myReference:reference })
+      if (referenceUser) {
+        user.balance = user.balance + 10;
+        user.Reference = reference
+        referenceUser.balance = referenceUser.balance + 10
+        referenceUser.save()
+      } else {
+        return next(new ErrorHandler("Refer Code is Invalid", 401));
 
-  if(user){
-    user = await User.findByIdAndUpdate(req.params.id, {
-      name,
-      password,
-    });
+      }
+    }
+
+    user.name = name;
+    user.password = password;
+    user.myReference = refer[0];
+    user.isActive = true;
 
     await user.save()
-  
-  }else{
-    return next(new ErrorHandler("Invalid User ", 401));
+
+
+
+  } else {
+    return next(new ErrorHandler("Invalid User or already sign in ", 401));
 
   }
   console.log('call....', user)
@@ -76,7 +99,7 @@ exports.registationUser = catchAsyncError(async (req, resp, next) => {
 
 
 exports.otpVerification = catchAsyncError(async (req, resp, next) => {
-  const { email, otp  } = req.body;
+  const { email, otp } = req.body;
   // console.log(req.body.password)
   const user = await User.findOne({ email }).select("+otp")
 
@@ -94,9 +117,9 @@ exports.otpVerification = catchAsyncError(async (req, resp, next) => {
   // sendToken(user, 200, resp);
   resp.status(201).json({
     success: true,
-    user:{
-      email:user.email,
-      _id:user._id
+    user: {
+      email: user.email,
+      _id: user._id
     }
   });
 });
@@ -164,16 +187,16 @@ exports.forgetPassword = catchAsyncError(async (req, resp, next) => {
   user.otp = otp;
   await user.save();
 
-  console.log(otp,user._id)
+  console.log(otp, user._id)
 
-  await sendEmail({ email, subject:"Play Bazaar email verification for password", html:`Your Otp is ${otp}` })
+  await sendEmail({ email, subject: "Play Bazaar email verification for password", html: `Your Otp is ${otp}` })
 
   // sendToken(user, 201, resp);
   resp.status(201).json({
     success: true,
-    user:{
-      _id:user._id,
-      email:user.email,
+    user: {
+      _id: user._id,
+      email: user.email,
     }
   });
 
@@ -181,7 +204,7 @@ exports.forgetPassword = catchAsyncError(async (req, resp, next) => {
 });
 
 exports.forgetPasswordGenrate = catchAsyncError(async (req, resp, next) => {
-  const { id,otp } = req.body
+  const { id, otp } = req.body
   const password = Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000;
 
   const user = await User.findById(id).select("+otp");
@@ -190,7 +213,7 @@ exports.forgetPasswordGenrate = catchAsyncError(async (req, resp, next) => {
     return next(new ErrorHandler("Invalid Email", 404));
   }
 
-  if(user.otp !== Number(otp)){
+  if (user.otp !== Number(otp)) {
     return next(new ErrorHandler("Invalid Otp", 404));
   }
   user.otp = '';
@@ -200,7 +223,7 @@ exports.forgetPasswordGenrate = catchAsyncError(async (req, resp, next) => {
 
   console.log(password)
   const html = `Your New Password is ${password}`
-  await sendEmail({ email:user.email, subject:"Play Bazaar email verification for password", html })
+  await sendEmail({ email: user.email, subject: "Play Bazaar email verification for password", html })
 
   // sendToken(user, 201, resp);
   resp.status(201).json({
