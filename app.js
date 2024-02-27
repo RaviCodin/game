@@ -31,8 +31,12 @@ cloudinary.config({
   });
 
 const userRoute = require("./routes/userRoutes");
+const gameRoute = require("./routes/gameRoute");
+const paymentRoute = require("./routes/paymentRoute");
 
 app.use("/api/v1",userRoute);
+app.use("/api/v1",gameRoute);
+app.use("/api/v1",paymentRoute);
 
 
 app.use(express.static(path.join(__dirname,"./build")))

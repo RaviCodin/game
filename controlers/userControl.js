@@ -312,7 +312,7 @@ exports.profileUpdate = catchAsyncError(async (req, res, next) => {
 
   // console.log("user",req.body.avatar)
 
-  if (req.body.avatar !== "") {
+  if (req.body.avatar !== "" && req.body.avatar) {
 
     const imageId = user.avtar.public_id
 
@@ -348,7 +348,7 @@ exports.profileUpdate = catchAsyncError(async (req, res, next) => {
   // const user = await User.findById(req.user.id)
 
   user.name = req.body.name;
-  user.email = req.body.email,
+  // user.email = req.body.email,
     user.phone = req.body.phone,
 
 
