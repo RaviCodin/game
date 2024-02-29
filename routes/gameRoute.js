@@ -12,7 +12,7 @@ const { isAuthanticatedUser, authourizRoles } = require("../middleWare/auth");
 
 const router = express.Router();
 
-router.route("/game/create").post(createGame);
+router.route("/game/create").post(createGame); 
 router.route("/game/results/create").post(isAuthanticatedUser, results);
 
 router.route("/game/my-bets/:userId").get(getMyGames); //user

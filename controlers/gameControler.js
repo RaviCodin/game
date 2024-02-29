@@ -25,6 +25,9 @@ exports.createGame = catchAsyncError(async (req, resp, next) => {
 
     await user.save()
 
+    await PaymentDB.create({ userId: req.body.userId, status: "Bet created", amount: req.body.totalPrice, fluctuation: 'Debited' });
+
+
     resp.status(201).json({
         success: true,
         message: "your bet successfully created"
@@ -100,11 +103,13 @@ exports.getResults = catchAsyncError(async (req, resp, next) => {
 
 
     const myDate = new Date(req.body.date)
+    let todayDate = moment(myDate).format('MM DD YYYY'); //'20-01-2024'
+    
+    // todayDate = req.body.date !== "" ? req.body.date : todayDate
 
-    const todayDate = moment(myDate).format('MM DD YYYY'); //'20-01-2024'
-    console.log(myDate, todayDate)
+    // console.log(todayDate)
 
-    const results = await GameResultDB.find({ createAt: todayDate, gameCategory: req.body.gameCategory })
+    const results = await GameResultDB.find({ createAt: todayDate })
     // const results = await GameResultDB.find({})
 
     if (!results) {
