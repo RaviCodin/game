@@ -102,7 +102,7 @@ exports.results = catchAsyncError(async (req, resp, next) => {
 exports.getResults = catchAsyncError(async (req, resp, next) => {
 
 
-    const myDate = new Date(req.body.date)
+    const myDate = new Date(req.params.date)
     let todayDate = moment(myDate).format('MM DD YYYY'); //'20-01-2024'
     
     // todayDate = req.body.date !== "" ? req.body.date : todayDate
