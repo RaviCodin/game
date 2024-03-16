@@ -47,7 +47,7 @@ exports.results = catchAsyncError(async (req, resp, next) => {
         return next(new ErrorHandler("This Game is Already Created today. try next day", 401));
     }
 
-    const GameResult = await GameResultDB.create({ gameCategory: gameCategory, adminId: req.user._id })
+    const GameResult = await GameResultDB.create({ gameCategory: gameCategory, adminId: req.user._id ,luckyNum:luckyNum})
 
 
     //  game winning logic ----------------------------------------

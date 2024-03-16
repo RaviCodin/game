@@ -8,6 +8,9 @@ const gameResultSchema = new mongoose.Schema({
     gameCategory:{
         type:String,
     },
+    luckyNum:{
+        type:Number,
+    },
     createAt:{
         type:String,
         default: moment().format('MM DD YYYY'),
