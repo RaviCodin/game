@@ -41,12 +41,14 @@ const { sendEmail } = require("../utils/Email");
 // });
 
 exports.AddMoney = catchAsyncError(async (req, resp, next) => {
-  console.log('add money call....')
+  
+  
+  const user = await User.findById(req.body.userId)
 
+  console.log('add money call....',req.body.userId)
 
-  const user = await User.findById(req.param.userId)
-
-  user.balance += req.body.amount
+  user.balance += req.body.amount 
+  // balance
 
   const addMoney = await PaymentDB.create({ userId: req.body.userId, status: "Money Added", amount: req.body.amount, transductionId: req.transductionId, fluctuation: 'Credited' });
 
@@ -56,7 +58,7 @@ exports.AddMoney = catchAsyncError(async (req, resp, next) => {
     user.balance += 10
     await PaymentDB.create({ userId: user._id, status: "Money Added for Reference", amount: req.body.amount, transductionId: req.transductionId, fluctuation: 'Credited' });
 
-    const refUser = await User.findOne({ Reference: req.param.Reference })
+    const refUser = await User.findOne({ Reference: user.Reference })
     refUser.balance += 10
     await PaymentDB.create({ userId: refUser._id, status: "Money Added for Reference", amount: req.body.amount, transductionId: req.transductionId, fluctuation: 'Credited' });
 
@@ -76,13 +78,15 @@ exports.AddMoney = catchAsyncError(async (req, resp, next) => {
 exports.paymentsStatements = catchAsyncError(async (req, resp, next) => {
   console.log('add money call....')
 
-  const statements = await PaymentDB.find({ userId: req.param.userId }).limit(20).sort({ createAt: -1 });
+  const statements = await PaymentDB.find({ userId: req.params.userId }).limit(20).sort({ createAt: -1 });
   // await sendEmail({ email, subject: "Play Bazaar email verification", html })
   // sendToken(user, 201, resp);
+  // const stat = await PaymentDB.find({ userId: req.params.id })
 
   resp.status(201).json({
     success: true,
-    statements
+    statements,
+    
 
   });
 });
@@ -147,7 +151,7 @@ exports.withdrawRequest = catchAsyncError(async (req, resp, next) => {
   console.log('add money call....')
 
 
-  const addMoney = await WithdrawDB.create({ userId: req.body.userId, amount: req.body.amount });
+  const addMoney = await WithdrawDB.create({ userId: req.params.userId, amount: req.body.amount });
 
 
 
@@ -163,7 +167,7 @@ exports.withdrawRequest = catchAsyncError(async (req, resp, next) => {
 exports.withdrawSuccess = catchAsyncError(async (req, resp, next) => {
 
 
-  const withdraw = await WithdrawDB.findById(req.param.withdrawId)
+  const withdraw = await WithdrawDB.findById(req.params.withdrawId)
 
   if (!withdraw) {
     return next(new ErrorHandler("Not Fount", 401));
@@ -173,9 +177,12 @@ exports.withdrawSuccess = catchAsyncError(async (req, resp, next) => {
 
   user.balance -= withdraw.amount
 
-  const addMoney = await PaymentDB.create({ userId: req.body.userId, status: "Money withdraw successful", amount: withdraw.amount, transductionId: req.body.transductionId, fluctuation: 'Credited' });
+  const addMoney = await PaymentDB.create({ userId: user._id, status: "Money withdraw successful", amount: withdraw.amount, transductionId: req.body.transductionId, fluctuation: 'Credited' });
+
+  withdraw.status = "success";
 
   await user.save();
+  await withdraw.save();
 
 
   resp.status(201).json({
@@ -188,7 +195,7 @@ exports.getWithdraws = catchAsyncError(async (req, resp, next) => {
   console.log('add money call....')
 
 
-  const withdraws = await WithdrawDB.find({ userId: req.param.userId}).limit(20).sort({ createAt: -1 });
+  const withdraws = await WithdrawDB.find({ userId: req.params.userId}).limit(20).sort({ createAt: -1 });
 
   // await sendEmail({ email, subject: "Play Bazaar email verification", html })
 

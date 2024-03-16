@@ -15,7 +15,7 @@ const { isAuthanticatedUser, authourizRoles } = require("../middleWare/auth");
 const router = express.Router();
  
 // router.route("/email").post(emailReg);
-router.route("/money/added/:userId").post(AddMoney); // for users
+router.route("/money-added").post(AddMoney); // for users
 router.route("/payments-statements/:userId").get(paymentsStatements); // for users
 
 
