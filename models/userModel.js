@@ -71,6 +71,9 @@ const userSchema = new mongoose.Schema({
     accountHolderName:{
         type:String,
     },
+    phone:{
+        type:String,
+    },
 
     createAt:{
         type:Date,
