@@ -79,7 +79,7 @@ exports.results = catchAsyncError(async (req, resp, next) => {
         const user = await User.findById(item.userId);
         user.balance += item.betPrice * 95;
 
-        const payment = await PaymentDB.create({ userId: item.userId, status: "Your win bet.", amount: item.betPrice * 95, fluctuation: 'Add' });
+        const payment = await PaymentDB.create({ userId: item.userId, status: "Your win bet.", amount: item.betPrice * 95, fluctuation: 'Credited' });
 
 
         await user.save()

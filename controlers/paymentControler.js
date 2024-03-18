@@ -42,25 +42,29 @@ const { sendEmail } = require("../utils/Email");
 
 exports.AddMoney = catchAsyncError(async (req, resp, next) => {
   
-  
+  const {amount} = req.body
+
+  const price = Number(amount) 
+
   const user = await User.findById(req.body.userId)
 
   console.log('add money call....',req.body.userId)
 
-  user.balance += req.body.amount 
+  user.balance += price
+  // user.balance = 3105
   // balance
 
-  const addMoney = await PaymentDB.create({ userId: req.body.userId, status: "Money Added", amount: req.body.amount, transductionId: req.transductionId, fluctuation: 'Credited' });
+  const addMoney = await PaymentDB.create({ userId: req.body.userId, status: "Money Added", amount: price, transductionId: req.transductionId, fluctuation: 'Credited' });
 
   if (user.isReference) {
     user.isReference = false;
 
     user.balance += 10
-    await PaymentDB.create({ userId: user._id, status: "Money Added for Reference", amount: req.body.amount, transductionId: req.transductionId, fluctuation: 'Credited' });
+    await PaymentDB.create({ userId: user._id, status: "Money Added for Reference", amount: price, transductionId: req.transductionId, fluctuation: 'Credited' });
 
     const refUser = await User.findOne({ Reference: user.Reference })
     refUser.balance += 10
-    await PaymentDB.create({ userId: refUser._id, status: "Money Added for Reference", amount: req.body.amount, transductionId: req.transductionId, fluctuation: 'Credited' });
+    await PaymentDB.create({ userId: refUser._id, status: "Money Added for Reference", amount: price, transductionId: req.transductionId, fluctuation: 'Credited' });
 
     await refUser.save();
   }
