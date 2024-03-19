@@ -60,11 +60,11 @@ exports.AddMoney = catchAsyncError(async (req, resp, next) => {
     user.isReference = false;
 
     user.balance += 10
-    await PaymentDB.create({ userId: user._id, status: "Money Added for Reference", amount: price, transductionId: req.transductionId, fluctuation: 'Credited' });
+    await PaymentDB.create({ userId: user._id, status: "Money Added for Reference", amount: 10, transductionId: req.transductionId, fluctuation: 'Credited' });
 
     const refUser = await User.findOne({ Reference: user.Reference })
     refUser.balance += 10
-    await PaymentDB.create({ userId: refUser._id, status: "Money Added for Reference", amount: price, transductionId: req.transductionId, fluctuation: 'Credited' });
+    await PaymentDB.create({ userId: refUser._id, status: "Money Added for Reference", amount: 10, transductionId: req.transductionId, fluctuation: 'Credited' });
 
     await refUser.save();
   }

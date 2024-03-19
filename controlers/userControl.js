@@ -62,12 +62,17 @@ exports.registationUser = catchAsyncError(async (req, resp, next) => {
   user = await User.findById(req.params.id).select("+password")
   if (user && user.isActive === false) {
     if (reference && user.Reference === null) {
-      const referenceUser = await User.findOne({ myReference:reference })
+      const referenceUser = await User.findOne({ myReference: reference })
       if (referenceUser) {
         user.balance = user.balance + 10;
         user.Reference = reference
+        user.isReference = true
         referenceUser.balance = referenceUser.balance + 10
         referenceUser.save()
+
+        await PaymentDB.create({ userId: user._id, status: "Money Added for Reference", amount: 10, fluctuation: 'Credited' });
+        await PaymentDB.create({ userId: referenceUser._id, status: "Money Added for Reference", amount: 10, fluctuation: 'Credited' });
+
       } else {
         return next(new ErrorHandler("Refer Code is Invalid", 401));
 
@@ -349,7 +354,7 @@ exports.profileUpdate = catchAsyncError(async (req, res, next) => {
 
   user.name = req.body.name;
   // user.email = req.body.email,
-    user.phone = req.body.phone,
+  user.phone = req.body.phone,
 
 
     await user.save()

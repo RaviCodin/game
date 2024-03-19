@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
     },
     isReference:{
         type:Boolean,
-        default:true
+        default:false
     },
     Reference:{
         type:String,
