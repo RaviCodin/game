@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/static/css/main.3351d0e7.css",
+    "main.js": "/static/js/main.de0dee7a.js",
+    "static/js/496.c8bc0447.chunk.js": "/static/js/496.c8bc0447.chunk.js",
+    "static/media/logoF.png": "/static/media/logoF.d22c1581ca4aad2de15b.png",
+    "static/media/logo.png": "/static/media/logo.7c57da309fc3e52a2f19.png",
+    "static/media/user1.jpg": "/static/media/user1.0d14c6999b4a5c8e86a7.jpg",
+    "static/media/da.png": "/static/media/da.5d6911951ea1e5148b12.png",
+    "static/media/invite-user.avif": "/static/media/invite-user.74bbab01e903a1f30a6c.avif",
+    "static/media/new-directory.svg": "/static/media/new-directory.c7942a9c0fb8a493075037d7ccb64ab0.svg",
+    "index.html": "/index.html",
+    "static/media/orgs.svg": "/static/media/orgs.8c066e0aea8161a74e0fe0830b684875.svg",
+    "static/media/news-177.svg": "/static/media/news-177.4c75041d1c7f677d1a0a8d69dcc5f2f2.svg",
+    "static/media/team.svg": "/static/media/team.2d1da70eec8e4886e944cbee49d1a502.svg",
+    "static/media/users-m.svg": "/static/media/users-m.b1b11c3066d2de86e24a33e22562551b.svg",
+    "static/media/analytics.svg": "/static/media/analytics.af31bfd0caf15713f532105397b6d385.svg",
+    "main.3351d0e7.css.map": "/static/css/main.3351d0e7.css.map",
+    "main.de0dee7a.js.map": "/static/js/main.de0dee7a.js.map",
+    "496.c8bc0447.chunk.js.map": "/static/js/496.c8bc0447.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3351d0e7.css",
+    "static/js/main.de0dee7a.js"
+  ]
+}
