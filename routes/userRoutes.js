@@ -44,7 +44,7 @@ router
 
 router
   .route("/admin/user/:id")
-  .get(isAuthanticatedUser, authourizRoles("admin"), getsingleUser);
+  .get(isAuthanticatedUser, authourizRoles("admin","user"), getsingleUser);
   
 router
   .route("/admin/user/:id")

@@ -368,20 +368,53 @@ exports.profileUpdate = catchAsyncError(async (req, res, next) => {
 
 // get all user (access Admin)
 exports.getAllUser = catchAsyncError(async (req, res, next) => {
+  
+
   const { keyword, page } = req.query;
 
-  const resultPerPage = 5;
+  const resultPerPage = 10;
+  let totalUsers = null
+
+  // const userId = req.params.id;
   const currentPage = Number(page) || 1;
   const skip = resultPerPage * (currentPage - 1);
 
+  const allField = ["NAME", "name"];
 
-  const totalUsers = await User.find().count()
-  const users = await User.find().limit(resultPerPage).skip(skip).sort({ createdAt: -1 });
+  let allFieldsObj = [];
 
-  res.status(200).json({
-    sucess: true,
-    users, totalUsers, resultPerPage
-  })
+  allField.forEach(element => {
+    const obj = {};
+    obj[`${element}`] = {
+      $regex: keyword,
+      $options: "i",
+    };
+    allFieldsObj.push(obj);
+  });
+
+  const keywordData = keyword
+    ? {
+      "$or": allFieldsObj
+    }
+    : "";
+
+  let users = []
+
+  if (keywordData !== "") {
+    totalUsers = await User.find(keywordData).count()
+    users = await User.find(keywordData).limit(resultPerPage).skip(skip).sort({ Date: -1 });
+  } else {
+    totalUsers = await User.find().count()
+    users = await User.find().limit(resultPerPage).skip(skip).sort({ Date: -1 });
+  }
+
+  res.status(201).json({
+    success: true,
+    message: "Data Submit successfully",
+    users,
+    totalUsers,
+    resultPerPage
+  });
 })
 
 // get single user (access Admin)

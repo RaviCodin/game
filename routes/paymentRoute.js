@@ -20,7 +20,7 @@ router.route("/payments-statements/:userId").get(paymentsStatements); // for use
 
 
 router.route("/withdraw-request/:userId").post(withdrawRequest); // for user
-router.route("/withdraw-success/:withdrawId").put(withdrawSuccess); // for admin - 
+router.route("/withdraw-success/:withdrawId").put(withdrawSuccess); // for admin 
 
 router.route("/get/withdraws/:userId").get(getWithdraws); // for user
 
